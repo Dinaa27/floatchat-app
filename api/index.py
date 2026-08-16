@@ -1,12 +1,15 @@
 import os
 import re
 import json
+from pathlib import Path
 from typing import Optional, Dict, Any
 from pydantic import BaseModel
 import pandas as pd
 import numpy as np
+
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import HTMLResponse
 from groq import Groq
 
 app = FastAPI(title="FloatChat AI")
@@ -60,9 +63,25 @@ You can answer ANY question:
 
 Do NOT output [PLOT_DATA] for general conversation or greetings."""
 
+# 1. GET / Route (Serves the Website Interface)
+@app.get("/", response_class=HTMLResponse)
+def get_home():
+    search_paths = [
+        Path(__file__).parent.parent / "index.html",
+        Path(__file__).parent.parent / "public" / "index.html",
+        Path(__file__).parent.parent / "static" / "index.html",
+        Path("index.html"),
+        Path("public/index.html"),
+        Path("static/index.html")
+    ]
+    for path in search_paths:
+        if path.exists():
+            return HTMLResponse(content=path.read_text(encoding="utf-8"))
+    return HTMLResponse(content="<h1>FloatChat Loading Error: index.html not found.</h1>")
+
+# 2. POST /api/chat Route (Handles the AI Chat & Telemetry)
 @app.post("/api/chat")
 @app.post("/chat")
-@app.post("/")
 async def chat_api(req: ChatRequest):
     if not groq_client:
         return {"answer": "⚠️ Server error: GROQ_API_KEY environment variable is not configured in Vercel.", "is_data_query": False, "statistics": None, "chart_data": None}
