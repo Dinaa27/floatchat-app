@@ -5,7 +5,6 @@ from typing import Optional, Dict, Any
 from pydantic import BaseModel
 import pandas as pd
 import numpy as np
-
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from groq import Groq
@@ -54,14 +53,16 @@ def generate_ocean_profile(region: str = "Arabian Sea", max_depth: float = 1000.
 
 SYSTEM_PROMPT = """You are FloatChat AI, an expert, enthusiastic oceanographer and conversational assistant for global ARGO float data.
 You can answer ANY question:
-1. Greetings & Casual Chat (e.g. "hi", "who are you?"): reply warmly and suggest ocean topics.
-2. General Ocean Science: explain ocean concepts clearly with markdown bullet points.
+1. Greetings & Casual Chat: reply warmly and suggest ocean topics.
+2. General Ocean Science: explain concepts clearly with markdown formatting.
 3. ARGO Data & Profiling Requests: explain the depth dynamics and mixed layers, and at the VERY END output this exact trigger tag:
    [PLOT_DATA: region=REGION_NAME, depth=DEPTH_IN_METERS]
 
 Do NOT output [PLOT_DATA] for general conversation or greetings."""
 
 @app.post("/api/chat")
+@app.post("/chat")
+@app.post("/")
 async def chat_api(req: ChatRequest):
     if not groq_client:
         return {"answer": "⚠️ Server error: GROQ_API_KEY environment variable is not configured in Vercel.", "is_data_query": False, "statistics": None, "chart_data": None}
