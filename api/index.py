@@ -22,35 +22,27 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-GROQ_API_KEY = os.getenv("GROQ_API_KEY", "").strip()
-
-try:
-    groq_client = Groq(api_key=GROQ_API_KEY) if GROQ_API_KEY else None
-except Exception:
-    groq_client = None
-
 class ChatRequest(BaseModel):
     message: str
 
-# Verified list of text chat models only (Excludes whisper/audio)
-CHAT_MODELS = [
+# Only active, officially supported Groq production models (2026)
+PRODUCTION_MODELS = [
     "llama-3.3-70b-versatile",
     "llama-3.1-8b-instant",
-    "llama3-70b-8192",
-    "llama3-8b-8192",
-    "mixtral-8x7b-32768",
-    "gemma2-9b-it"
+    "mixtral-8x7b-32768"
 ]
 
 def generate_chat_response(messages: list) -> str:
-    """Tries the best available text model, automatically skipping unavailable ones."""
-    if not groq_client:
-        raise ValueError("GROQ_API_KEY is not configured in Vercel environment variables.")
+    api_key = os.getenv("GROQ_API_KEY", "").strip()
+    if not api_key:
+        raise ValueError("GROQ_API_KEY is not configured in Vercel Environment Variables.")
 
+    client = Groq(api_key=api_key)
+    
     last_error = None
-    for model_name in CHAT_MODELS:
+    for model_name in PRODUCTION_MODELS:
         try:
-            response = groq_client.chat.completions.create(
+            response = client.chat.completions.create(
                 model=model_name,
                 messages=messages,
                 temperature=0.3,
