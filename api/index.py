@@ -32,31 +32,36 @@ except Exception:
 class ChatRequest(BaseModel):
     message: str
 
-def get_active_model() -> str:
-    """Automatically queries Groq to find which models your account has access to."""
+# Verified list of text chat models only (Excludes whisper/audio)
+CHAT_MODELS = [
+    "llama-3.3-70b-versatile",
+    "llama-3.1-8b-instant",
+    "llama3-70b-8192",
+    "llama3-8b-8192",
+    "mixtral-8x7b-32768",
+    "gemma2-9b-it"
+]
+
+def generate_chat_response(messages: list) -> str:
+    """Tries the best available text model, automatically skipping unavailable ones."""
     if not groq_client:
-        return "llama-3.3-70b-versatile"
+        raise ValueError("GROQ_API_KEY is not configured in Vercel environment variables.")
+
+    last_error = None
+    for model_name in CHAT_MODELS:
+        try:
+            response = groq_client.chat.completions.create(
+                model=model_name,
+                messages=messages,
+                temperature=0.3,
+                max_tokens=1024
+            )
+            return response.choices[0].message.content
+        except Exception as e:
+            last_error = e
+            continue
     
-    preferred_order = [
-        "llama-3.3-70b-versatile",
-        "llama-3.1-70b-versatile",
-        "llama-3.1-8b-instant",
-        "llama3-70b-8192",
-        "llama3-8b-8192",
-        "mixtral-8x7b-32768",
-        "gemma2-9b-it"
-    ]
-    try:
-        available_models = [m.id for m in groq_client.models.list().data]
-        for pref in preferred_order:
-            if pref in available_models:
-                return pref
-        # If none of the preferred models match, use the first available text model
-        if available_models:
-            return available_models[0]
-    except Exception:
-        pass
-    return "llama3-8b-8192"
+    raise last_error
 
 def generate_ocean_profile(region: str = "Arabian Sea", max_depth: float = 1000.0) -> pd.DataFrame:
     depths = np.linspace(5, max_depth, 60)
@@ -107,23 +112,13 @@ def get_home():
 @app.post("/api/chat")
 @app.post("/chat")
 async def chat_api(req: ChatRequest):
-    if not groq_client:
-        return {"answer": "⚠️ Server error: GROQ_API_KEY is not configured.", "is_data_query": False, "statistics": None, "chart_data": None}
-
     try:
-        # Dynamically selects the active model available for your key
-        active_model = get_active_model()
+        messages = [
+            {"role": "system", "content": SYSTEM_PROMPT},
+            {"role": "user", "content": req.message}
+        ]
         
-        response = groq_client.chat.completions.create(
-            model=active_model,
-            messages=[
-                {"role": "system", "content": SYSTEM_PROMPT},
-                {"role": "user", "content": req.message}
-            ],
-            temperature=0.3,
-            max_tokens=1024
-        )
-        ai_text = response.choices[0].message.content
+        ai_text = generate_chat_response(messages)
         plot_match = re.search(r'\[PLOT_DATA:\s*region=([^,]+),\s*depth=(\d+)\]', ai_text)
 
         if plot_match:
