@@ -32,6 +32,32 @@ except Exception:
 class ChatRequest(BaseModel):
     message: str
 
+def get_active_model() -> str:
+    """Automatically queries Groq to find which models your account has access to."""
+    if not groq_client:
+        return "llama-3.3-70b-versatile"
+    
+    preferred_order = [
+        "llama-3.3-70b-versatile",
+        "llama-3.1-70b-versatile",
+        "llama-3.1-8b-instant",
+        "llama3-70b-8192",
+        "llama3-8b-8192",
+        "mixtral-8x7b-32768",
+        "gemma2-9b-it"
+    ]
+    try:
+        available_models = [m.id for m in groq_client.models.list().data]
+        for pref in preferred_order:
+            if pref in available_models:
+                return pref
+        # If none of the preferred models match, use the first available text model
+        if available_models:
+            return available_models[0]
+    except Exception:
+        pass
+    return "llama3-8b-8192"
+
 def generate_ocean_profile(region: str = "Arabian Sea", max_depth: float = 1000.0) -> pd.DataFrame:
     depths = np.linspace(5, max_depth, 60)
     if "bengal" in region.lower():
@@ -63,30 +89,6 @@ You can answer ANY question:
 
 Do NOT output [PLOT_DATA] for general conversation or greetings."""
 
-# Primary model list (Tries LLaMA-3.3-70B first)
-MODEL_CANDIDATES = [
-    "llama-3.3-70b-versatile",
-    "llama-3.1-70b-versatile",
-    "llama-3.1-8b-instant"
-]
-
-def get_groq_completion(messages: list) -> str:
-    """Tries llama-3.3-70b-versatile first, with fallback to keep uptime 100%."""
-    last_error = None
-    for model_name in MODEL_CANDIDATES:
-        try:
-            response = groq_client.chat.completions.create(
-                model=model_name,
-                messages=messages,
-                temperature=0.3,
-                max_tokens=1024
-            )
-            return response.choices[0].message.content
-        except Exception as e:
-            last_error = e
-            continue
-    raise last_error
-
 @app.get("/", response_class=HTMLResponse)
 def get_home():
     search_paths = [
@@ -106,17 +108,22 @@ def get_home():
 @app.post("/chat")
 async def chat_api(req: ChatRequest):
     if not groq_client:
-        return {"answer": "⚠️ Server error: GROQ_API_KEY is not configured in Vercel.", "is_data_query": False, "statistics": None, "chart_data": None}
+        return {"answer": "⚠️ Server error: GROQ_API_KEY is not configured.", "is_data_query": False, "statistics": None, "chart_data": None}
 
     try:
-        messages = [
-            {"role": "system", "content": SYSTEM_PROMPT},
-            {"role": "user", "content": req.message}
-        ]
+        # Dynamically selects the active model available for your key
+        active_model = get_active_model()
         
-        # Calls the primary 70B model with fail-safe fallback
-        ai_text = get_groq_completion(messages)
-        
+        response = groq_client.chat.completions.create(
+            model=active_model,
+            messages=[
+                {"role": "system", "content": SYSTEM_PROMPT},
+                {"role": "user", "content": req.message}
+            ],
+            temperature=0.3,
+            max_tokens=1024
+        )
+        ai_text = response.choices[0].message.content
         plot_match = re.search(r'\[PLOT_DATA:\s*region=([^,]+),\s*depth=(\d+)\]', ai_text)
 
         if plot_match:
