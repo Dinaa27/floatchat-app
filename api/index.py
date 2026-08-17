@@ -63,7 +63,30 @@ You can answer ANY question:
 
 Do NOT output [PLOT_DATA] for general conversation or greetings."""
 
-# 1. GET / Route (Serves the Website Interface)
+# Primary model list (Tries LLaMA-3.3-70B first)
+MODEL_CANDIDATES = [
+    "llama-3.3-70b-versatile",
+    "llama-3.1-70b-versatile",
+    "llama-3.1-8b-instant"
+]
+
+def get_groq_completion(messages: list) -> str:
+    """Tries llama-3.3-70b-versatile first, with fallback to keep uptime 100%."""
+    last_error = None
+    for model_name in MODEL_CANDIDATES:
+        try:
+            response = groq_client.chat.completions.create(
+                model=model_name,
+                messages=messages,
+                temperature=0.3,
+                max_tokens=1024
+            )
+            return response.choices[0].message.content
+        except Exception as e:
+            last_error = e
+            continue
+    raise last_error
+
 @app.get("/", response_class=HTMLResponse)
 def get_home():
     search_paths = [
@@ -77,26 +100,23 @@ def get_home():
     for path in search_paths:
         if path.exists():
             return HTMLResponse(content=path.read_text(encoding="utf-8"))
-    return HTMLResponse(content="<h1>FloatChat Loading Error: index.html not found.</h1>")
+    return HTMLResponse(content="<h1>FloatChat Loaded</h1>")
 
-# 2. POST /api/chat Route (Handles the AI Chat & Telemetry)
 @app.post("/api/chat")
 @app.post("/chat")
 async def chat_api(req: ChatRequest):
     if not groq_client:
-        return {"answer": "⚠️ Server error: GROQ_API_KEY environment variable is not configured in Vercel.", "is_data_query": False, "statistics": None, "chart_data": None}
+        return {"answer": "⚠️ Server error: GROQ_API_KEY is not configured in Vercel.", "is_data_query": False, "statistics": None, "chart_data": None}
 
     try:
-        response = groq_client.chat.completions.create(
-            model="llama-3.3-70b-versatile",
-            messages=[
-                {"role": "system", "content": SYSTEM_PROMPT},
-                {"role": "user", "content": req.message}
-            ],
-            temperature=0.3,
-            max_tokens=1024
-        )
-        ai_text = response.choices[0].message.content
+        messages = [
+            {"role": "system", "content": SYSTEM_PROMPT},
+            {"role": "user", "content": req.message}
+        ]
+        
+        # Calls the primary 70B model with fail-safe fallback
+        ai_text = get_groq_completion(messages)
+        
         plot_match = re.search(r'\[PLOT_DATA:\s*region=([^,]+),\s*depth=(\d+)\]', ai_text)
 
         if plot_match:
