@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>FloatChat AI - Ocean Intelligence</title>
   
   <!-- Tailwind CSS -->
@@ -12,15 +12,11 @@
   <!-- Marked.js for Tables & Markdown -->
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 
-  <!-- Custom Animation & Table Styles -->
   <style>
+    /* Smooth Keyframe Animations */
     @keyframes fadeInUp {
-      from { opacity: 0; transform: translateY(12px); }
+      from { opacity: 0; transform: translateY(8px); }
       to { opacity: 1; transform: translateY(0); }
-    }
-    @keyframes slideInRight {
-      from { opacity: 0; transform: translateX(40px) scale(0.97); }
-      to { opacity: 1; transform: translateX(0) scale(1); }
     }
     @keyframes pulseGlow {
       0%, 100% { box-shadow: 0 0 15px rgba(6, 182, 212, 0.15); border-color: rgba(6, 182, 212, 0.3); }
@@ -28,140 +24,149 @@
     }
 
     .msg-animate {
-      animation: fadeInUp 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-    }
-    .panel-slide-in {
-      animation: slideInRight 0.45s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      animation: fadeInUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
     }
     .glow-card {
       animation: pulseGlow 3s infinite;
     }
 
-    /* Markdown & Table Styling */
+    /* Markdown & Responsive Tables */
     .prose-chat table {
       width: 100%;
+      display: block;
+      overflow-x: auto;
       border-collapse: collapse;
-      margin: 0.75rem 0;
+      margin: 0.6rem 0;
       border-radius: 0.5rem;
-      overflow: hidden;
-      font-size: 0.85rem;
+      font-size: 0.8rem;
     }
     .prose-chat th {
       background-color: #0e7490;
       color: #ffffff;
-      padding: 0.5rem 0.75rem;
+      padding: 0.4rem 0.6rem;
       text-align: left;
       font-weight: 600;
       border: 1px solid #155e75;
+      white-space: nowrap;
     }
     .prose-chat td {
-      padding: 0.45rem 0.75rem;
+      padding: 0.35rem 0.6rem;
       border: 1px solid #1e293b;
       background-color: #0f172a;
       color: #e2e8f0;
+      white-space: nowrap;
     }
-    .prose-chat tr:nth-child(even) td {
-      background-color: #1e293b;
-    }
+    .prose-chat tr:nth-child(even) td { background-color: #1e293b; }
     .prose-chat h1, .prose-chat h2, .prose-chat h3 {
       color: #38bdf8;
       font-weight: 700;
-      margin: 0.6rem 0 0.25rem 0;
+      margin: 0.5rem 0 0.2rem 0;
     }
-    .prose-chat h1 { font-size: 1.15rem; }
-    .prose-chat h2 { font-size: 1.05rem; }
-    .prose-chat h3 { font-size: 0.95rem; }
-    .prose-chat ul { list-style-type: disc; padding-left: 1.25rem; margin: 0.35rem 0; }
-    .prose-chat ol { list-style-type: decimal; padding-left: 1.25rem; margin: 0.35rem 0; }
-    .prose-chat li { margin-bottom: 0.2rem; }
-    .prose-chat p { margin-bottom: 0.45rem; }
+    .prose-chat h1 { font-size: 1.1rem; }
+    .prose-chat h2 { font-size: 1rem; }
+    .prose-chat h3 { font-size: 0.9rem; }
+    .prose-chat ul { list-style-type: disc; padding-left: 1.2rem; margin: 0.3rem 0; }
+    .prose-chat ol { list-style-type: decimal; padding-left: 1.2rem; margin: 0.3rem 0; }
+    .prose-chat li { margin-bottom: 0.15rem; }
+    .prose-chat p { margin-bottom: 0.4rem; }
     .prose-chat code {
       background-color: #1e293b;
       color: #38bdf8;
       padding: 0.1rem 0.3rem;
       border-radius: 0.25rem;
       font-family: monospace;
-      font-size: 0.8rem;
+      font-size: 0.75rem;
     }
   </style>
 </head>
-<body class="bg-slate-950 text-slate-100 flex flex-col h-screen font-sans overflow-hidden">
+<body class="bg-slate-950 text-slate-100 flex flex-col h-[100dvh] font-sans overflow-hidden">
   
   <!-- Header -->
-  <header class="p-4 border-b border-cyan-900/40 bg-slate-900/90 backdrop-blur flex items-center justify-between shadow-lg z-10">
-    <div class="flex items-center space-x-3">
-      <div class="relative flex h-3 w-3">
+  <header class="px-4 py-3 border-b border-cyan-900/40 bg-slate-900/90 backdrop-blur flex items-center justify-between shadow-lg z-10 shrink-0">
+    <div class="flex items-center space-x-2.5">
+      <div class="relative flex h-2.5 w-2.5">
         <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-75"></span>
-        <span class="relative inline-flex rounded-full h-3 w-3 bg-cyan-500"></span>
+        <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-cyan-500"></span>
       </div>
-      <h1 class="text-xl font-bold bg-gradient-to-r from-cyan-400 via-teal-300 to-blue-500 bg-clip-text text-transparent">
-        🌊 FloatChat AI Assistant
+      <h1 class="text-lg md:text-xl font-bold bg-gradient-to-r from-cyan-400 via-teal-300 to-blue-500 bg-clip-text text-transparent">
+        🌊 FloatChat AI
       </h1>
     </div>
-    <span class="text-xs px-3 py-1 rounded-full bg-cyan-950/80 text-cyan-300 border border-cyan-800/80 font-mono tracking-wide">
-      ARGO Global Array Live
+    <span class="text-[10px] md:text-xs px-2.5 py-0.5 rounded-full bg-cyan-950/80 text-cyan-300 border border-cyan-800 font-mono tracking-wide">
+      ARGO Global Live
     </span>
   </header>
 
-  <!-- Main Container -->
-  <div id="mainContainer" class="flex flex-1 overflow-hidden transition-all duration-500 justify-center">
+  <!-- Main Responsive Container (Stacks vertically on Mobile, Side-by-Side on Desktop) -->
+  <div id="mainContainer" class="flex flex-col lg:flex-row flex-1 overflow-hidden transition-all duration-500 justify-center">
     
-    <!-- Chat Column (Centered by default, smoothly resizes when graph opens) -->
-    <div id="chatWrapper" class="flex flex-col h-full w-full max-w-3xl transition-all duration-500 ease-in-out">
+    <!-- Left Column: Chat Wrapper -->
+    <div id="chatWrapper" class="flex flex-col h-full w-full max-w-3xl transition-all duration-500 ease-in-out shrink-0">
       
-      <!-- Chat Message Stream -->
-      <div id="chatBox" class="flex-1 p-5 overflow-y-auto space-y-4">
-        <div class="bg-slate-900/80 p-5 rounded-2xl border border-slate-800 text-sm leading-relaxed shadow-md msg-animate">
+      <!-- Chat Messages Scroll Area -->
+      <div id="chatBox" class="flex-1 p-3 md:p-5 overflow-y-auto space-y-3 md:space-y-4">
+        
+        <!-- Welcome Card -->
+        <div class="bg-slate-900/80 p-4 md:p-5 rounded-2xl border border-slate-800 text-xs md:text-sm leading-relaxed shadow-md msg-animate">
           👋 <b>Hello! I'm FloatChat AI</b>, your oceanographic research assistant.<br><br>
-          You can chat with me naturally about general ocean science or ask for live ARGO depth profiles:
-          <ul class="list-disc pl-5 mt-2 space-y-1.5 text-cyan-300 text-xs">
-            <li>"What is the mixed layer depth in Bay of Bengal?"</li>
-            <li>"Show a table of ocean zones and their depths"</li>
-            <li>"Show temperature and salinity profile in Arabian Sea down to 1000m" <i>(Opens Live Visualizer)</i></li>
-          </ul>
+          Ask any ocean question or tap one of the quick queries below:
+          
+          <!-- Tap-to-Ask Suggestion Chips -->
+          <div class="flex flex-wrap gap-1.5 mt-3">
+            <button onclick="quickAsk('Show temperature and salinity in Arabian Sea down to 1000m')" class="bg-cyan-950/80 hover:bg-cyan-900 text-cyan-300 border border-cyan-800 text-[11px] px-2.5 py-1 rounded-full transition text-left">
+              📊 Arabian Sea (1000m)
+            </button>
+            <button onclick="quickAsk('What is the mixed layer depth in Bay of Bengal?')" class="bg-cyan-950/80 hover:bg-cyan-900 text-cyan-300 border border-cyan-800 text-[11px] px-2.5 py-1 rounded-full transition text-left">
+              🌊 Bay of Bengal MLD
+            </button>
+            <button onclick="quickAsk('Show a table of ocean zones and their depths')" class="bg-cyan-950/80 hover:bg-cyan-900 text-cyan-300 border border-cyan-800 text-[11px] px-2.5 py-1 rounded-full transition text-left">
+              📋 Ocean Layers Table
+            </button>
+          </div>
         </div>
+
       </div>
 
-      <!-- Typing / Loading Radar -->
-      <div id="loadingIndicator" class="hidden px-5 py-2">
-        <div class="flex items-center space-x-2 text-xs text-cyan-400 font-mono animate-pulse">
+      <!-- Loading / Radar Indicator -->
+      <div id="loadingIndicator" class="hidden px-4 py-1.5 shrink-0">
+        <div class="flex items-center space-x-2 text-[11px] text-cyan-400 font-mono animate-pulse">
           <div class="w-2 h-2 rounded-full bg-cyan-400 animate-ping"></div>
-          <span>FloatChat is querying ARGO ocean telemetry...</span>
+          <span>FloatChat is analyzing ARGO data...</span>
         </div>
       </div>
 
-      <!-- Chat Input Bar -->
-      <div class="p-4 border-t border-slate-800/80 bg-slate-900/40 flex gap-2 backdrop-blur">
-        <input id="prompt" type="text" placeholder="Ask any ocean question or query float profile..." 
-               class="flex-1 bg-slate-950 border border-slate-700/80 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-cyan-400 text-slate-100 transition shadow-inner"
+      <!-- Input Bar -->
+      <div class="p-2.5 md:p-4 border-t border-slate-800/80 bg-slate-900/40 backdrop-blur flex gap-2 shrink-0">
+        <input id="prompt" type="text" placeholder="Ask about ocean float data..." 
+               class="flex-1 bg-slate-950 border border-slate-700/80 rounded-xl px-3.5 py-2 text-xs md:text-sm focus:outline-none focus:border-cyan-400 text-slate-100 transition shadow-inner"
                onkeydown="if(event.key === 'Enter') sendQuery()" />
-        <button onclick="sendQuery()" id="btn" class="bg-gradient-to-r from-cyan-500 to-teal-500 hover:from-cyan-400 hover:to-teal-400 text-slate-950 font-bold px-5 py-2.5 rounded-xl text-sm transition-all shadow-md active:scale-95">
+        <button onclick="sendQuery()" id="btn" class="bg-gradient-to-r from-cyan-500 to-teal-500 hover:from-cyan-400 hover:to-teal-400 text-slate-950 font-bold px-4 py-2 rounded-xl text-xs md:text-sm transition-all shadow-md active:scale-95 shrink-0">
           Send
         </button>
       </div>
     </div>
 
-    <!-- Right Column: Visualization & Telemetry Panel (Hidden by default, slides in only on data queries) -->
-    <div id="vizPanel" class="hidden w-1/2 p-5 flex-col bg-slate-900/30 overflow-y-auto space-y-5 border-l border-slate-800/80">
+    <!-- Right/Bottom Visualization Panel -->
+    <div id="vizPanel" class="hidden w-full lg:w-1/2 p-3 md:p-5 flex-col bg-slate-900/30 overflow-y-auto space-y-3 md:space-y-4 border-t lg:border-t-0 lg:border-l border-slate-800/80 shrink-0">
       
       <!-- Graph Card -->
-      <div class="bg-slate-900/90 rounded-2xl border border-cyan-800/40 p-4 shadow-xl glow-card panel-slide-in">
-        <div class="flex items-center justify-between mb-3">
-          <h3 class="text-sm font-semibold text-cyan-300 flex items-center space-x-2">
-            <span>📊 Live Ocean Depth Profile</span>
+      <div class="bg-slate-900/90 rounded-2xl border border-cyan-800/40 p-3 md:p-4 shadow-xl glow-card">
+        <div class="flex items-center justify-between mb-2">
+          <h3 class="text-xs md:text-sm font-semibold text-cyan-300">
+            📊 Live Ocean Depth Profile
           </h3>
-          <span id="regionBadge" class="text-xs font-mono px-2.5 py-0.5 rounded-full bg-cyan-950 text-cyan-300 border border-cyan-800"></span>
+          <span id="regionBadge" class="text-[10px] md:text-xs font-mono px-2 py-0.5 rounded-full bg-cyan-950 text-cyan-300 border border-cyan-800"></span>
         </div>
         
-        <div class="relative w-full h-[360px] bg-slate-950/70 rounded-xl overflow-hidden border border-slate-800/80">
+        <div class="relative w-full h-[280px] md:h-[340px] bg-slate-950/70 rounded-xl overflow-hidden border border-slate-800/80">
           <div id="plot" class="w-full h-full"></div>
         </div>
       </div>
 
       <!-- Telemetry Card -->
-      <div class="bg-slate-900/90 rounded-2xl border border-slate-800/80 p-4 shadow-md panel-slide-in">
-        <h3 class="text-xs font-semibold text-cyan-300 uppercase tracking-wider mb-2">Oceanographic Telemetry Stream</h3>
-        <pre id="telemetry" class="p-3 bg-slate-950/90 rounded-xl border border-slate-800 text-xs font-mono text-cyan-400 overflow-x-auto"></pre>
+      <div class="bg-slate-900/90 rounded-2xl border border-slate-800/80 p-3 md:p-4 shadow-md">
+        <h3 class="text-[11px] md:text-xs font-semibold text-cyan-300 uppercase tracking-wider mb-1.5">Ocean Telemetry Stream</h3>
+        <pre id="telemetry" class="p-2.5 bg-slate-950/90 rounded-xl border border-slate-800 text-[10px] md:text-xs font-mono text-cyan-400 overflow-x-auto"></pre>
       </div>
 
     </div>
@@ -170,6 +175,11 @@
 
   <script>
     marked.setOptions({ breaks: true, gfm: true });
+
+    function quickAsk(text) {
+      document.getElementById("prompt").value = text;
+      sendQuery();
+    }
 
     async function sendQuery() {
       const input = document.getElementById("prompt");
@@ -182,10 +192,9 @@
       const q = input.value.trim();
       if (!q) return;
 
-      // Append user bubble with smooth entrance
       chat.innerHTML += `
         <div class="flex justify-end msg-animate">
-          <div class="bg-gradient-to-r from-cyan-600 to-teal-600 p-3.5 rounded-2xl rounded-tr-none text-sm max-w-[85%] shadow-md text-white font-medium">
+          <div class="bg-gradient-to-r from-cyan-600 to-teal-600 p-3 rounded-2xl rounded-tr-none text-xs md:text-sm max-w-[85%] shadow-md text-white font-medium">
             ${q}
           </div>
         </div>
@@ -204,24 +213,21 @@
         const data = await res.json();
         loader.classList.add("hidden");
 
-        // Render AI Answer Markdown
         const renderedHtml = marked.parse(data.answer);
         chat.innerHTML += `
-          <div class="bg-slate-900/90 border border-cyan-900/40 p-4 rounded-2xl rounded-tl-none text-sm leading-relaxed text-slate-200 shadow-md prose-chat msg-animate">
+          <div class="bg-slate-900/90 border border-cyan-900/40 p-3.5 md:p-4 rounded-2xl rounded-tl-none text-xs md:text-sm leading-relaxed text-slate-200 shadow-md prose-chat msg-animate">
             ${renderedHtml}
           </div>
         `;
         chat.scrollTop = chat.scrollHeight;
 
-        // DYNAMIC LAYOUT SWITCHING
         if (data.is_data_query && data.chart_data && data.chart_data.depth.length > 0) {
-          // 1. Expand screen & slide in visualization panel
+          // Adapt layout for desktop & mobile
           chatWrapper.classList.remove("max-w-3xl");
-          chatWrapper.classList.add("w-1/2");
+          chatWrapper.classList.add("lg:w-1/2");
           vizPanel.classList.remove("hidden");
           vizPanel.classList.add("flex");
 
-          // 2. Set badges & telemetry
           if (data.statistics) {
             document.getElementById("telemetry").innerText = JSON.stringify(data.statistics, null, 2);
             if (data.statistics.region) {
@@ -229,7 +235,6 @@
             }
           }
 
-          // 3. Render Animated Plotly Profile
           const traceTemp = {
             x: data.chart_data.temp,
             y: data.chart_data.depth,
@@ -237,7 +242,7 @@
             type: 'scatter',
             mode: 'lines+markers',
             marker: { size: 3, color: '#ef4444' },
-            line: { color: '#ef4444', width: 2.5, shape: 'spline' }
+            line: { color: '#ef4444', width: 2.2, shape: 'spline' }
           };
 
           const tracePsal = {
@@ -248,43 +253,42 @@
             type: 'scatter',
             mode: 'lines+markers',
             marker: { size: 3, color: '#06b6d4' },
-            line: { color: '#06b6d4', width: 2.5, shape: 'spline' }
+            line: { color: '#06b6d4', width: 2.2, shape: 'spline' }
           };
 
           const layout = {
             autosize: true,
             paper_bgcolor: 'transparent',
             plot_bgcolor: 'rgba(15, 23, 42, 0.5)',
-            font: { color: '#94a3b8', size: 10 },
+            font: { color: '#94a3b8', size: 9 },
             yaxis: { 
               autorange: 'reversed', 
-              title: { text: 'Depth (dbar)', font: { size: 11, color: '#94a3b8' } },
+              title: { text: 'Depth (dbar)', font: { size: 10, color: '#94a3b8' } },
               gridcolor: '#1e293b'
             },
             xaxis: { 
-              title: { text: 'Temperature (°C)', font: { size: 11, color: '#ef4444' } }, 
+              title: { text: 'Temp (°C)', font: { size: 10, color: '#ef4444' } }, 
               tickfont: { color: '#ef4444' },
               gridcolor: '#1e293b'
             },
             xaxis2: { 
-              title: { text: 'Salinity (PSU)', font: { size: 11, color: '#06b6d4' } }, 
+              title: { text: 'Salinity (PSU)', font: { size: 10, color: '#06b6d4' } }, 
               tickfont: { color: '#06b6d4' }, 
               overlaying: 'x', 
               side: 'top',
               gridcolor: 'transparent'
             },
-            margin: { l: 55, r: 25, t: 45, b: 40 },
-            legend: { orientation: 'h', x: 0.25, y: -0.2 }
+            margin: { l: 45, r: 20, t: 35, b: 35 },
+            legend: { orientation: 'h', x: 0.1, y: -0.22 }
           };
 
           Plotly.newPlot('plot', [traceTemp, tracePsal], layout, { responsive: true, displayModeBar: false });
           setTimeout(() => Plotly.Plots.resize('plot'), 300);
 
         } else {
-          // If query is regular chat/theory -> Smoothly hide graph panel and re-center chat
           vizPanel.classList.add("hidden");
           vizPanel.classList.remove("flex");
-          chatWrapper.classList.remove("w-1/2");
+          chatWrapper.classList.remove("lg:w-1/2");
           chatWrapper.classList.add("max-w-3xl");
         }
 
